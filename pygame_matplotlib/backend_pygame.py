@@ -157,16 +157,12 @@ class RendererTemplate(RendererBase):
             s, gc.get_antialiased(), [val*255 for val in gc.get_rgb()]
         )
         if mtext is not None:
-            mtext.set_verticalalignment('bottom')
-            mtext.set_horizontalalignment('right')
+            # Reads the position of the mtext, but could use relative position to 0 instead
             x, y, _, _ = mtext.get_window_extent().bounds
-            # pygame starts from bottom left instead of middle
-            mtext.set_verticalalignment('center')
-            mtext.set_horizontalalignment('center')
-            new_x, new_y, _, _ = mtext.get_window_extent().bounds
-            print(x, y, new_x, new_y)
-            y += (new_y - y) * 2
-            x -= (new_x - x) * 2
+            width, height = myfont.size(s)
+            # Needs to resize to center
+            y += height / 2
+            x -= width / 2
         self.surface.blit(font_surface, (x, self.surface.get_height() - y))
 
     def flipy(self):

@@ -5,6 +5,7 @@ import pygame
 
 import matplotlib
 matplotlib.use('module://pygame_matplotlib.backend_pygame')
+#matplotlib.use('Qt4Agg')
 
 import matplotlib.pyplot as plt
 import matplotlib.figure as fg
@@ -15,4 +16,5 @@ ax.plot([1,2], [1,2], color='green')
 ax.text(1.5, 1.5, '2', size=50)
 ax.set_xlabel('swag')
 
-fig.show()
+
+plt.show()
