@@ -1,32 +1,11 @@
-"""
-A fully functional, do-nothing backend intended as a template for backend
-writers.  It is fully functional in that you can select it as a backend e.g.
+"""Pygame Matplotlib Backend.
+
+A functional backend for using matplotlib in pygame display.
+You can select it as a backend using
 with ::
 
     import matplotlib
-    matplotlib.use("template")
-
-and your program will (should!) run without error, though no output is
-produced.  This provides a starting point for backend writers; you can
-selectively implement drawing methods (`~.RendererTemplate.draw_path`,
-`~.RendererTemplate.draw_image`, etc.) and slowly see your figure come to life
-instead having to have a full blown implementation before getting any results.
-
-Copy this file to a directory outside of the Matplotlib source tree, somewhere
-where Python can import it (by adding the directory to your ``sys.path`` or by
-packaging it as a normal Python package); if the backend is importable as
-``import my.backend`` you can then select it using ::
-
-    import matplotlib
-    matplotlib.use("module://my.backend")
-
-If your backend implements support for saving figures (i.e. has a `print_xyz`
-method), you can register it as the default handler for a given file type::
-
-    from matplotlib.backend_bases import register_backend
-    register_backend('xyz', 'my_backend', 'XYZ File Format')
-    ...
-    plt.savefig("figure.xyz")
+    matplotlib.use("'module://pygame_matplotlib.backend_pygame'")
 """
 import numpy as np
 from matplotlib.transforms import Affine2D
@@ -36,7 +15,6 @@ from matplotlib.backend_bases import (
      FigureCanvasBase, FigureManagerBase, GraphicsContextBase, RendererBase)
 from matplotlib.figure import Figure
 from matplotlib.path import Path
-import math
 
 class FigureSurface(pygame.Surface, Figure):
     def __init__(self, *args, **kwargs):
@@ -45,13 +23,10 @@ class FigureSurface(pygame.Surface, Figure):
         pygame.Surface.__init__(self, self.bbox.size)
         self.fill('white')
 
-class RendererTemplate(RendererBase):
-    """
-    The renderer handles drawing/rendering operations.
+class RendererPygame(RendererBase):
+    """The renderer handles drawing/rendering operations.
 
-    This is a minimal do-nothing class that can be used to get started when
-    writing a new backend.  Refer to `backend_bases.RendererBase` for
-    documentation of the methods.
+    The draw methods convert maptplotlib into pygame.draw .
     """
 
     def __init__(self, dpi):
@@ -74,7 +49,9 @@ class RendererTemplate(RendererBase):
 
         transform += transfrom_to_pygame_axis
 
-        draw_func =  pygame.draw.aaline if gc.get_antialiased() else pygame.draw.line
+        draw_func = (  # Select whether antialiased will be used in pygame
+            pygame.draw.aaline if gc.get_antialiased() else pygame.draw.line
+        )
 
         previous_point = (0, 0)
         for point, code in path.iter_segments(transform):
@@ -88,29 +65,7 @@ class RendererTemplate(RendererBase):
             elif code == Path.CURVE3:
                 end_point = point[2:]
                 control_point = point[:2]
-                # Creates the bounding rectangle for the arc
-                # rect = pygame.Rect(
-                #     x:=min(previous_point[0], end_point[0]),
-                #     y:=min(previous_point[1], end_point[1]),
-                #     w:=max(previous_point[0], end_point[0]) - x,
-                #     h:=max(previous_point[1], end_point[1]) - y,
-                # )
-                # start_angle = math.atan(abs(
-                #     (x - control_point[0])
-                #     / (y- control_point[1])
-                # ))
-                # stop_angle = math.atan(abs(
-                #     (x + w - control_point[0])
-                #     / (y + h - control_point[1])
-                # ))
-                # Find the vectors to get the angle of the arc
-                #c_p = (control_point[0] - previous_point[0], control_point[1] - previous_point[1])
-                #c_e = (control_point[0] - end_point[0], control_point[1] - end_point[1])
-                #arc_angle = math.acos(
-                #    ((c_p[0] * c_e[0]) + (c_p[1] * c_e[1]))
-                #    / (math.hypot(*c_p) * math.hypot(*c_e))
-                #)
-                # The focals are at the intersection
+                # TODO: use bezier arcs instead
                 draw_func(
                     self.surface, color, previous_point, end_point, linewidth
                 )
@@ -144,10 +99,16 @@ class RendererTemplate(RendererBase):
 #         pass
 
     def draw_image(self, gc, x, y, im):
-        print(type(im))
-        print(x, y)
-        img_surf = pygame.image.frombuffer(np.ascontiguousarray(np.flip(im, axis=0)), (im.shape[1], im.shape[0]), 'RGBA')
-        self.surface.blit(img_surf, (x, self.surface.get_height() - y - im.shape[0]))
+        img_surf = pygame.image.frombuffer(
+            # Need to flip the image as pygame starts top left
+            np.ascontiguousarray(np.flip(im, axis=0)),
+            (im.shape[1], im.shape[0]), 'RGBA'
+        )
+        self.surface.blit(
+            img_surf,
+            # Image starts top left
+            (x, self.surface.get_height() - y - im.shape[0])
+        )
 
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
         # make sure font module is initialized
@@ -161,7 +122,8 @@ class RendererTemplate(RendererBase):
             s, gc.get_antialiased(), [val*255 for val in gc.get_rgb()]
         )
         if mtext is not None:
-            # Reads the position of the mtext, but could use relative position to 0 instead
+            # Reads the position of the mtext
+            # but could use relative position to 0 instead
             x, y, _, _ = mtext.get_window_extent().bounds
             width, height = myfont.size(s)
             # Needs to resize to center
@@ -182,10 +144,10 @@ class RendererTemplate(RendererBase):
 
     def new_gc(self):
         # docstring inherited
-        return GraphicsContextTemplate()
+        return GraphicsContextPygame()
 
     def points_to_pixels(self, points):
-        # if backend doesn't have dpi, e.g., postscript or svg
+        # points are pixels in pygame
         return points
         # elif backend assumes a value for pixels_per_inch
         #return points/72.0 * self.dpi.get() * pixels_per_inch/72.0
@@ -193,7 +155,7 @@ class RendererTemplate(RendererBase):
         #return points/72.0 * self.dpi.get()
 
 
-class GraphicsContextTemplate(GraphicsContextBase):
+class GraphicsContextPygame(GraphicsContextBase):
     """
     The graphics context provides the color, line styles, etc...  See the cairo
     and postscript backends for examples of mapping the graphics context
@@ -258,14 +220,12 @@ def new_figure_manager(num, *args, FigureClass=FigureSurface, **kwargs):
 
 def new_figure_manager_given_figure(num, figure):
     """Create a new figure manager instance for the given figure."""
-    canvas = FigureCanvasTemplate(figure)
-    manager = FigureManagerTemplate(canvas, num)
+    canvas = FigureCanvasPygame(figure)
+    manager = FigureManagerPygame(canvas, num)
     return manager
 
 
-
-
-class FigureCanvasTemplate(FigureCanvasBase):
+class FigureCanvasPygame(FigureCanvasBase):
     """
     The canvas the figure renders into.  Calls the draw and print fig
     methods, creates the renderers, etc.
@@ -294,7 +254,7 @@ class FigureCanvasTemplate(FigureCanvasBase):
         deferred work (like computing limits auto-limits and tick
         values) that users may want access to before saving to disk.
         """
-        renderer = RendererTemplate(self.figure.dpi)
+        renderer = RendererPygame(self.figure.dpi)
         renderer.surface = self.figure
         self.figure.draw(renderer)
 
@@ -321,7 +281,7 @@ class FigureCanvasTemplate(FigureCanvasBase):
         return 'foo'
 
 
-class FigureManagerTemplate(FigureManagerBase):
+class FigureManagerPygame(FigureManagerBase):
     """
     Helper class for pyplot mode, wraps everything up into a neat bundle.
 
@@ -333,10 +293,9 @@ class FigureManagerTemplate(FigureManagerBase):
         pygame.init()
         main_display = pygame.display.set_mode(
             self.canvas.figure.get_size(),  # Size matches figure size
-            pygame.RESIZABLE   # Allow resizing
         )
 
-        FPS = 144
+        FPS = 60
         FramePerSec = pygame.time.Clock()
 
         self.canvas.figure.canvas.draw()
@@ -360,5 +319,5 @@ class FigureManagerTemplate(FigureManagerBase):
 #
 ########################################################################
 
-FigureCanvas = FigureCanvasTemplate
-FigureManager = FigureManagerTemplate
+FigureCanvas = FigureCanvasPygame
+FigureManager = FigureManagerPygame
