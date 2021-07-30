@@ -28,6 +28,7 @@ method), you can register it as the default handler for a given file type::
     ...
     plt.savefig("figure.xyz")
 """
+import numpy as np
 from matplotlib.transforms import Affine2D
 import pygame
 from matplotlib._pylab_helpers import Gcf
@@ -143,7 +144,10 @@ class RendererTemplate(RendererBase):
 #         pass
 
     def draw_image(self, gc, x, y, im):
-        pass
+        print(type(im))
+        print(x, y)
+        img_surf = pygame.image.frombuffer(np.ascontiguousarray(np.flip(im, axis=0)), (im.shape[1], im.shape[0]), 'RGBA')
+        self.surface.blit(img_surf, (x, self.surface.get_height() - y - im.shape[0]))
 
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
         # make sure font module is initialized
@@ -167,7 +171,7 @@ class RendererTemplate(RendererBase):
 
     def flipy(self):
         # docstring inherited
-        return True
+        return False
 
     def get_canvas_width_height(self):
         # docstring inherited
@@ -327,7 +331,10 @@ class FigureManagerTemplate(FigureManagerBase):
     def show(self):
         # do something to display the GUI
         pygame.init()
-        main_display = pygame.display.set_mode(self.canvas.figure.get_size())
+        main_display = pygame.display.set_mode(
+            self.canvas.figure.get_size(),  # Size matches figure size
+            pygame.RESIZABLE   # Allow resizing
+        )
 
         FPS = 144
         FramePerSec = pygame.time.Clock()
