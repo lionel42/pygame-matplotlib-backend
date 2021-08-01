@@ -15,14 +15,14 @@ pip install pygame-matplotlib
 ## Usage
 
 First you will need to specify that you want to use pygame backend.
-```
+```python
 # Select pygame backend
 import matplotlib
 matplotlib.use('module://pygame_matplotlib.backend_pygame')
 ```
 
 Then you can use matplotlib as you usually do.
-```
+```python
 # Standard matplotlib syntax
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots()  # Create a figure containing a single axes.
@@ -32,7 +32,7 @@ plt.show()
 
 Or you can include the plot in your game using the fact that a ```Figure``` is
 also a ```pygame.Surface``` with this backend.
-```
+```python
 import pygame
 import pygame.display
 
