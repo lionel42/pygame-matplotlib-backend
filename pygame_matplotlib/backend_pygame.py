@@ -57,6 +57,7 @@ class RendererPygame(RendererBase):
 
         previous_point = (0, 0)
         poly_points = []
+        # print(path)
         for point, code in path.iter_segments(transform):
             # previous_point = point
             # print(point, code)
