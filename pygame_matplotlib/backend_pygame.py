@@ -10,6 +10,7 @@ with ::
 import numpy as np
 from matplotlib.transforms import Affine2D
 import pygame
+from pygame import gfxdraw
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.backend_bases import (
      FigureCanvasBase, FigureManagerBase, GraphicsContextBase, RendererBase)
@@ -18,7 +19,6 @@ from matplotlib.path import Path
 
 class FigureSurface(pygame.Surface, Figure):
     def __init__(self, *args, **kwargs):
-        print("initialized")
         Figure.__init__(self, *args, **kwargs)
         pygame.Surface.__init__(self, self.bbox.size)
         self.fill('white')
@@ -36,9 +36,10 @@ class RendererPygame(RendererBase):
 
     def draw_path(self, gc, path, transform, rgbFace=None):
 
-        if rgbFace is None:
-            rgbFace = gc.get_rgb()
-        color = tuple([int(val*255) for i, val in enumerate(rgbFace) if i < 3])
+        if rgbFace is not None:
+            color = tuple([int(val*255) for i, val in enumerate(rgbFace) if i < 3])
+        else:
+            color = tuple([int(val*255) for i, val in enumerate(gc.get_rgb()) if i < 3])
 
         linewidth = int(gc.get_linewidth())
 
@@ -54,25 +55,38 @@ class RendererPygame(RendererBase):
         )
 
         previous_point = (0, 0)
+        poly_points = []
         for point, code in path.iter_segments(transform):
             # previous_point = point
             # print(point, code)
+
             if code == Path.LINETO:
                 draw_func(
                     self.surface, color, previous_point, point, linewidth
                 )
                 previous_point = point
-            elif code == Path.CURVE3:
+                poly_points.append(point)
+            elif code == Path.CURVE3 or code == Path.CURVE4:
                 end_point = point[2:]
-                control_point = point[:2]
-                # TODO: use bezier arcs instead
-                draw_func(
-                    self.surface, color, previous_point, end_point, linewidth
+                points_curve = np.concatenate((previous_point, point)).reshape((-1, 2))
+                gfxdraw.bezier(
+                    self.surface, points_curve, len(points_curve), color
                 )
                 previous_point = end_point
-            else:
+                poly_points.append(end_point)
+            elif code == Path.CLOSEPOLY:
+                print('close', poly_points, point)
+                if len(poly_points) > 2:
+                    gfxdraw.filled_polygon(
+                        self.surface,
+                        poly_points,
+                        color
+                    )
+            elif code == Path.MOVETO:
+                poly_points.append(point)
                 previous_point = point
-        pass
+            else:  # STOP
+                previous_point = point
 
     # draw_markers is optional, and we get more correct relative
     # timings by leaving it out.  backend implementers concerned with
