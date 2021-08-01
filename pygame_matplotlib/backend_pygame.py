@@ -10,6 +10,7 @@ with ::
 import numpy as np
 from matplotlib.transforms import Affine2D
 import pygame
+import pygame.image
 from pygame import gfxdraw
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.backend_bases import (
@@ -75,7 +76,6 @@ class RendererPygame(RendererBase):
                 previous_point = end_point
                 poly_points.append(end_point)
             elif code == Path.CLOSEPOLY:
-                print('close', poly_points, point)
                 if len(poly_points) > 2:
                     gfxdraw.filled_polygon(
                         self.surface,
@@ -255,9 +255,25 @@ class FigureCanvasPygame(FigureCanvasBase):
     figure : `matplotlib.figure.Figure`
         A high-level Figure instance
     """
+    # File types allowed for saving
+    filetypes = {
+        'jpeg': 'Joint Photographic Experts Group',
+        'jpg': 'Joint Photographic Experts Group',
+        'png': 'Portable Network Graphics',
+        'bmp': 'Bitmap Image File',
+        'tga': 'Truevision Graphics Adapter',
+    }
 
     def __init__(self, figure=None):
-        FigureCanvasBase.__init__(self, figure)
+        super().__init__(figure)
+
+        # You should provide a print_xxx function for every file format
+        # you can write.
+        for file_extension in self.filetypes.keys():
+            setattr(
+                self, 'print_{}'.format(file_extension),
+                self._print_any
+            )
 
     def draw(self):
         """
@@ -272,27 +288,13 @@ class FigureCanvasPygame(FigureCanvasBase):
         renderer.surface = self.figure
         self.figure.draw(renderer)
 
-    # You should provide a print_xxx function for every file format
-    # you can write.
-
-    # If the file type is not in the base set of filetypes,
-    # you should add it to the class-scope filetypes dictionary as follows:
-    filetypes = {**FigureCanvasBase.filetypes, 'foo': 'My magic Foo format'}
-
-    def print_foo(self, filename, *args, **kwargs):
-        """
-        Write out format foo.
-
-        This method is normally called via `.Figure.savefig` and
-        `.FigureCanvasBase.print_figure`, which take care of setting the figure
-        facecolor, edgecolor, and dpi to the desired output values, and will
-        restore them to the original values.  Therefore, `print_foo` does not
-        need to handle these settings.
-        """
+    def _print_any(self, filename, *args, **kwargs):
+        """Call the pygame image saving method for the correct extenstion."""
         self.draw()
+        pygame.image.save(self.figure, filename)
 
     def get_default_filetype(self):
-        return 'foo'
+        return 'jpg'
 
 
 class FigureManagerPygame(FigureManagerBase):
