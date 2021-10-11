@@ -24,6 +24,16 @@ class FigureSurface(pygame.Surface, Figure):
         pygame.Surface.__init__(self, self.bbox.size)
         self.fill('white')
 
+    def set_bounding_rect(self, rect: pygame.Rect):
+        """Set a bounding rectangle around the figure."""
+        # First convert inches to pixels for matplotlib
+        DPI = self.get_dpi()
+        self.set_size_inches(rect.width/float(DPI), rect.height/float(DPI))
+        # Initialize a new surface for the plot
+        pygame.Surface.__init__(self, (rect.width, rect.height))
+        # Redraw the figure
+        self.canvas.draw()
+
 class RendererPygame(RendererBase):
     """The renderer handles drawing/rendering operations.
 
