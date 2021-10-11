@@ -59,9 +59,13 @@ class RendererPygame(RendererBase):
     def draw_path(self, gc, path, transform, rgbFace=None):
 
         if rgbFace is not None:
-            color = tuple([int(val*255) for i, val in enumerate(rgbFace) if i < 3])
+            color = tuple([
+                int(val*255) for i, val in enumerate(rgbFace) if i < 3
+            ])
         else:
-            color = tuple([int(val*255) for i, val in enumerate(gc.get_rgb()) if i < 3])
+            color = tuple([
+                int(val*255) for i, val in enumerate(gc.get_rgb()) if i < 3
+            ])
 
         linewidth = int(gc.get_linewidth())
 
@@ -91,7 +95,9 @@ class RendererPygame(RendererBase):
                 poly_points.append(point)
             elif code == Path.CURVE3 or code == Path.CURVE4:
                 end_point = point[2:]
-                points_curve = np.concatenate((previous_point, point)).reshape((-1, 2))
+                points_curve = np.concatenate(
+                    (previous_point, point)
+                ).reshape((-1, 2))
                 gfxdraw.bezier(
                     self.surface, points_curve, len(points_curve), color
                 )
@@ -186,9 +192,9 @@ class RendererPygame(RendererBase):
         # points are pixels in pygame
         return points
         # elif backend assumes a value for pixels_per_inch
-        #return points/72.0 * self.dpi.get() * pixels_per_inch/72.0
+        # return points/72.0 * self.dpi.get() * pixels_per_inch/72.0
         # else
-        #return points/72.0 * self.dpi.get()
+        # return points/72.0 * self.dpi.get()
 
 
 class GraphicsContextPygame(GraphicsContextBase):
@@ -238,7 +244,6 @@ def show(*, block=None):
     """
     for manager in Gcf.get_all_fig_managers():
         manager.show()
-
 
 
 def new_figure_manager(num, *args, FigureClass=FigureSurface, **kwargs):
