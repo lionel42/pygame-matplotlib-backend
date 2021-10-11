@@ -18,8 +18,19 @@ from matplotlib.backend_bases import (
 from matplotlib.figure import Figure
 from matplotlib.path import Path
 
+
 class FigureSurface(pygame.Surface, Figure):
+    """Hybrid object mixing pygame.Surface and matplotlib.Figure.
+
+    The functionality of both objects is kept with some special features
+    that help handling the figures in pygame.
+    """
+
     def __init__(self, *args, **kwargs):
+        """Create a FigureSurface object.
+
+        Signature is the same as matplotlib Figure object.
+        """
         Figure.__init__(self, *args, **kwargs)
         pygame.Surface.__init__(self, self.bbox.size)
         self.fill('white')
@@ -34,6 +45,7 @@ class FigureSurface(pygame.Surface, Figure):
         # Redraw the figure
         self.canvas.draw()
 
+
 class RendererPygame(RendererBase):
     """The renderer handles drawing/rendering operations.
 
@@ -43,7 +55,6 @@ class RendererPygame(RendererBase):
     def __init__(self, dpi):
         super().__init__()
         self.dpi = dpi
-
 
     def draw_path(self, gc, path, transform, rgbFace=None):
 
