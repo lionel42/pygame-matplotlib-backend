@@ -10,7 +10,7 @@ from .backend_pygame import FigureSurface
 import matplotlib
 matplotlib.use('module://pygame_matplotlib.backend_pygame')
 
-class PlotWindow(pygame_gui.elements.ui_window.UIWindow):
+class UIPlotWindow(pygame_gui.elements.ui_window.UIWindow):
     def __init__(
         self,
         rect: pygame.Rect,

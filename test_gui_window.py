@@ -1,18 +1,12 @@
 """Simple script to test from https://pygame-gui.readthedocs.io/en/latest/quick_start.html"""
 
-from typing import Tuple, Union
+
 import pygame
 import pygame_gui
-from pygame_gui.core.interfaces.manager_interface import IUIManagerInterface
-from pygame_gui.core.ui_element import ObjectID
-
-from pygame_gui.elements.ui_window import UIWindow
-from pygame_gui.core.utility import basic_blit
-
 
 import matplotlib.pyplot as plt
 
-from pygame_matplotlib.gui_window import PlotWindow
+from pygame_matplotlib.gui_window import UIPlotWindow
 
 
 pygame.init()
@@ -35,7 +29,7 @@ axes2.plot([1,2], [1,2], color='blue', label='test')
 fig2.canvas.draw()
 
 
-plot_window = PlotWindow(
+plot_window = UIPlotWindow(
     rect=pygame.Rect((350, 275), (300, 200)),
     manager=manager,
     figuresurface=fig,
@@ -45,11 +39,11 @@ plot_window = PlotWindow(
 
 
 
-plot_window2 = PlotWindow(
-    rect=pygame.Rect((350, 275), (300, 200)),
+plot_window2 = UIPlotWindow(
+    rect=pygame.Rect((350, 275), (200, 200)),
     manager=manager,
     figuresurface=fig2,
-    resizable=True
+    resizable=False
 )
 
 
