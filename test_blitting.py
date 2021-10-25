@@ -34,7 +34,6 @@ print(bg)
 ax.draw_artist(ln)
 # show the result to the screen, this pushes the updated RGBA buffer from the
 # renderer to the GUI framework so you can see it
-fig.canvas.blit(fig.bbox)
 
 for j in range(1000):
     # reset the background back in the canvas state, screen unchanged
@@ -42,10 +41,14 @@ for j in range(1000):
     # update the artist, neither the canvas state nor the screen have changed
     ln.set_ydata(np.sin(x + (j / 100) * np.pi))
     # re-render the artist, updating the canvas state, but not the screen
+    print(ax.get_renderer_cache())
+    print('Draw starts')
     ax.draw_artist(ln)
+    print('Draw ends')
     # copy the image to the GUI state, but screen might not be changed yet
     fig.canvas.blit(fig.bbox)
+    print(fig._cachedRenderer)
     # flush any pending GUI events, re-painting the screen if needed
     fig.canvas.flush_events()
     # you can put a pause in if you want to slow things down
-    # plt.pause(.1)
+    plt.pause(1)

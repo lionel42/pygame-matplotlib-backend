@@ -56,6 +56,10 @@ class FigureSurface(pygame.Surface, Figure):
         # Redraw the figure
         self.canvas.draw()
 
+    #def draw(self, *args, **kwargs):
+    #    print(*args, **kwargs)
+    #    return super().draw(self, *args, **kwargs)
+
 
 class RendererPygame(RendererBase):
     """The renderer handles drawing/rendering operations.
@@ -71,7 +75,7 @@ class RendererPygame(RendererBase):
 
     def rect_from_bbox(self, bbox: Bbox) -> pygame.Rect:
         """Convert a matplotlib bbox to the equivalent pygame Rect."""
-        print(bbox.get_points())
+        raise NotImplementedError()
 
     def draw_path(self, gc, path, transform, rgbFace=None):
 
@@ -354,9 +358,11 @@ class FigureCanvasPygame(FigureCanvasBase):
         self.figure.draw(self.renderer)
 
     def blit(self, bbox=None):
+        # self._png_is_old = True
         self.renderer = self.get_renderer(cleared=False)
         self.renderer.surface = self.figure
         self.figure.draw(self.renderer)
+
 
     def get_renderer(self, cleared=False) -> RendererPygame:
         fig = self.figure
@@ -387,6 +393,17 @@ class FigureCanvasPygame(FigureCanvasBase):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 show_fig = False
+
+    def start_event_loop(self, interval: float):
+        FPS = 60
+        FramePerSec = pygame.time.Clock()
+        time_elapsed = 0
+        while time_elapsed < interval:
+            events = pygame.event.get()
+            time_elapsed += FramePerSec.tick(FPS) / 1000. # Convert ms
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
 
 
 class FigureManagerPygame(FigureManagerBase):
