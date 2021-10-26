@@ -174,22 +174,53 @@ class RendererPygame(RendererBase):
         # make sure font module is initialized
         if not pygame.font.get_init():
             pygame.font.init()
-        # prop is the fondt properties
-        font_size = prop.get_size() * self.dpi / 57
+        # prop is the font properties
+        font_size = prop.get_size_in_points() * 2
         myfont = pygame.font.Font(prop.get_file(), int(font_size))
         # apply it to text on a label
         font_surface = myfont.render(
             s, gc.get_antialiased(), [val * 255 for val in gc.get_rgb()]
         )
+        # Get the expected size of the font
+        width, height = myfont.size(s)
+        # Tuple for the position of the font
+        font_surf_position = (
+            x,
+            self.surface.get_height() - y
+        )
         if mtext is not None:
-            # Reads the position of the mtext
-            # but could use relative position to 0 instead
-            x, y, _, _ = mtext.get_window_extent().bounds
-            width, height = myfont.size(s)
-            # Needs to resize to center
-            y += height / 2
-            x -= width / 2
-        self.surface.blit(font_surface, (x, self.surface.get_height() - y))
+            # Use the alignement from mtext or default
+            h_alignment = mtext.get_horizontalalignment()
+            v_alignment = mtext.get_verticalalignment()
+        else:
+            h_alignment = 'center'
+            v_alignment = 'center'
+        # Use the alignement to know where the font should go
+        if h_alignment == 'left':
+            h_offset = 0
+        elif h_alignment == 'center':
+            h_offset = - width / 2
+        elif h_alignment == 'right':
+            h_offset = - width
+        else:
+            h_offset = 0
+
+        if v_alignment == 'top':
+            v_offset = 0
+        elif v_alignment == 'center' or v_alignment == 'center_baseline':
+            v_offset = - height / 2
+        elif v_alignment == 'bottom' or v_alignment == 'baseline':
+            v_offset = - height
+        else:
+            v_offset = 0
+        # pygame.draw.circle(self.surface, (255, 0, 0), (x, self.surface.get_height() - y), 3)
+        # pygame.draw.lines(self.surface, (0, 255, 0), True, ((x, self.surface.get_height() - y), (x + width, self.surface.get_height() - y), (x + width, self.surface.get_height() - y + height)))
+        # Tuple for the position of the font
+        font_surf_position = (
+            x + h_offset,
+            self.surface.get_height() - y + v_offset
+        )
+        self.surface.blit(font_surface, font_surf_position)
 
     def flipy(self):
         # docstring inherited
