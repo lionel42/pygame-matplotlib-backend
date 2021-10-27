@@ -94,7 +94,7 @@ fr_number = ax.annotate(
 bm = BlitManager(fig.canvas, [ln, fr_number])
 # make sure our window is on the screen and drawn
 plt.show(block=False)
-plt.pause(.1)
+plt.pause(1)
 
 for j in range(1000):
     # update the artists
@@ -102,3 +102,4 @@ for j in range(1000):
     fr_number.set_text("frame: {j}".format(j=j))
     # tell the blitting manager to do its thing
     bm.update()
+    # plt.pause(1)

@@ -8,12 +8,19 @@ with ::
     matplotlib.use("'module://pygame_matplotlib.backend_pygame'")
 """
 from __future__ import annotations
+from logging import setLoggerClass
+from typing import List
 import matplotlib
+from matplotlib.artist import Artist
 from matplotlib.pyplot import figure
+from matplotlib.axes import Axes
 import numpy as np
 from matplotlib.transforms import Affine2D
 import pygame
 from pygame import surface
+from pygame import time
+from pygame.draw import arc
+from pygame.event import wait
 import pygame.image
 from pygame import gfxdraw
 from matplotlib._pylab_helpers import Gcf
@@ -36,6 +43,7 @@ class FigureSurface(pygame.Surface, Figure):
     """
 
     canvas: FigureCanvasPygame
+    animated_artists: List[Artist]
 
     def __init__(self, *args, **kwargs):
         """Create a FigureSurface object.
@@ -44,7 +52,7 @@ class FigureSurface(pygame.Surface, Figure):
         """
         Figure.__init__(self, *args, **kwargs)
         pygame.Surface.__init__(self, self.bbox.size)
-        self.fill("white")
+        # self.fill("white")
 
     def set_bounding_rect(self, rect: pygame.Rect):
         """Set a bounding rectangle around the figure."""
@@ -56,9 +64,52 @@ class FigureSurface(pygame.Surface, Figure):
         # Redraw the figure
         self.canvas.draw()
 
-    #def draw(self, *args, **kwargs):
-    #    print(*args, **kwargs)
-    #    return super().draw(self, *args, **kwargs)
+    def draw(self, renderer):
+        return super().draw(renderer)
+
+    def get_interactive_artists(self, renderer):
+        """Get the interactive artists.
+
+        Custom method used for the blitting.
+        Modification of _get_draw_artists
+        Also runs apply_aspect.
+        """
+        artists = self.get_children()
+
+        for sfig in self.subfigs:
+            artists.remove(sfig)
+            childa = sfig.get_children()
+            for child in childa:
+                if child in artists:
+                    artists.remove(child)
+
+        artists.remove(self.patch)
+        artists = sorted(
+            (artist for artist in artists if artist.get_animated()),
+            key=lambda artist: artist.get_zorder(),
+        )
+
+        for ax in self._localaxes.as_list():
+            locator = ax.get_axes_locator()
+
+            if locator:
+                pos = locator(ax, renderer)
+                ax.apply_aspect(pos)
+            else:
+                ax.apply_aspect()
+
+            for child in ax.get_children():
+                if child.get_animated():
+                    artists.append(child)
+                if hasattr(child, "apply_aspect"):
+                    locator = child.get_axes_locator()
+                    if locator:
+                        pos = locator(child, renderer)
+                        child.apply_aspect(pos)
+                    else:
+                        child.apply_aspect()
+
+        return artists
 
 
 class RendererPygame(RendererBase):
@@ -78,7 +129,7 @@ class RendererPygame(RendererBase):
         raise NotImplementedError()
 
     def draw_path(self, gc, path, transform, rgbFace=None):
-
+        """Draw a path using pygame functions."""
         if rgbFace is not None:
             color = tuple(
                 [int(val * 255) for i, val in enumerate(rgbFace) if i < 3]
@@ -103,11 +154,7 @@ class RendererPygame(RendererBase):
 
         previous_point = (0, 0)
         poly_points = []
-        # print(path)
         for point, code in path.iter_segments(transform):
-            # previous_point = point
-            # print(point, code)
-
             if code == Path.LINETO:
                 draw_func(
                     self.surface, color, previous_point, point, linewidth
@@ -253,13 +300,7 @@ class RendererPygame(RendererBase):
         copy.bbox = bbox
         return copy
 
-    def restore_region(self, region: pygame.Surface, bbox: Bbox, xy):
-        rect = (
-            pygame.Rect(0, 0, *self.surface.get_size())
-            if bbox is None
-            else self.rect_from_bbox(bbox)
-        )
-        region.blit(self.surface, rect)
+
 
 
 class GraphicsContextPygame(GraphicsContextBase):
@@ -347,6 +388,7 @@ class FigureCanvasPygame(FigureCanvasBase):
     figure : `matplotlib.figure.Figure`
         A high-level Figure instance
     """
+    blitting: bool = False
 
     # File types allowed for saving
     filetypes = {
@@ -358,6 +400,7 @@ class FigureCanvasPygame(FigureCanvasBase):
     }
     figure: FigureSurface
     renderer: RendererPygame
+    main_display: pygame.Surface
 
     def __init__(self, figure=None):
         super().__init__(figure)
@@ -372,8 +415,14 @@ class FigureCanvasPygame(FigureCanvasBase):
         return renderer.copy_from_bbox(bbox)
 
     def restore_region(self, region, bbox=None, xy=None):
-        renderer = self.get_renderer()
-        return renderer.restore_region(region, bbox, xy)
+        rect = (
+            pygame.Rect(*(
+                0, 0 if xy is None else xy
+            ), *self.get_renderer().surface.get_size())
+            if bbox is None
+            else self.rect_from_bbox(bbox)
+        )
+        self.figure.blit(region, rect)
 
     def draw(self):
         """
@@ -386,13 +435,21 @@ class FigureCanvasPygame(FigureCanvasBase):
         """
         self.renderer = self.get_renderer(cleared=True)
         self.renderer.surface = self.figure
-        self.figure.draw(self.renderer)
+        if self.blitting:
+            # Draw only interactive artists
+            artists = self.figure.get_interactive_artists(self.renderer)
+            for a in artists:
+                a.draw(self.renderer)
+        else:
+            # Full redraw of the figure
+            self.figure.draw(self.renderer)
+
 
     def blit(self, bbox=None):
-        # self._png_is_old = True
         self.renderer = self.get_renderer(cleared=False)
         self.renderer.surface = self.figure
-        self.figure.draw(self.renderer)
+        self.blitting = True
+
 
 
     def get_renderer(self, cleared=False) -> RendererPygame:
@@ -419,11 +476,13 @@ class FigureCanvasPygame(FigureCanvasBase):
     def flush_events(self):
         self.main_display.blit(self.figure, (0, 0))
         pygame.display.update()
+        self.pygame_quit_event_check()
+
+    def pygame_quit_event_check(self):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
-                show_fig = False
 
     def start_event_loop(self, interval: float):
         FPS = 60
@@ -443,20 +502,30 @@ class FigureManagerPygame(FigureManagerBase):
 
     For non-interactive backends, the base class is sufficient.
     """
+    canvas: FigureCanvasPygame
+    def get_main_display(self):
+        if hasattr(self.canvas, 'main_display'):
+            if (self.canvas.figure.get_size() == self.canvas.main_display.get_size()):
+                # If the main display exist and its size has not changed
+                return self.canvas.main_display
+        main_display = pygame.display.set_mode(
+            self.canvas.figure.get_size(),  # Size matches figure size
+        )
+        main_display.fill('white')
+        self.canvas.main_display = main_display
+        return main_display
 
     def show(self, block):
         # do something to display the GUI
         pygame.init()
-        main_display = pygame.display.set_mode(
-            self.canvas.figure.get_size(),  # Size matches figure size
-        )
-
-        self.canvas.main_display = main_display
+        main_display = self.get_main_display()
 
         FPS = 60
         FramePerSec = pygame.time.Clock()
 
-        self.canvas.figure.canvas.draw()
+        if not self.canvas.blitting:
+            # Draw if we are not blitting
+            self.canvas.draw()
         main_display.blit(self.canvas.figure, (0, 0))
         pygame.display.update()
 
