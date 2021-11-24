@@ -23,12 +23,10 @@ plt.show(block=False)
 #  a) we have the correctly sized and drawn background to grab
 #  b) we have a cached renderer so that ``ax.draw_artist`` works
 # so we spin the event loop to let the backend process any pending operations
-plt.pause(0.1)
+plt.pause(1)
 
 # get copy of entire figure (everything inside fig.bbox) sans animated artist
-print(fig.bbox)
 bg = fig.canvas.copy_from_bbox(fig.bbox)
-print(bg)
 
 # draw the animated artist, this uses a cached renderer
 ax.draw_artist(ln)

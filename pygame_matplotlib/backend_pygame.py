@@ -67,6 +67,23 @@ class FigureSurface(pygame.Surface, Figure):
     def draw(self, renderer):
         return super().draw(renderer)
 
+    def set_alpha(self):
+        pass
+    def set_at(self):
+        pass
+    def set_clip(self):
+        pass
+    def set_colorkey(self):
+        pass
+    def set_masks(self):
+        pass
+    def set_palette(self):
+        pass
+    def set_palette_at(self):
+        pass
+    def set_shifts(self):
+        pass
+
     def get_interactive_artists(self, renderer):
         """Get the interactive artists.
 
