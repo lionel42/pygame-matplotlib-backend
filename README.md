@@ -7,6 +7,9 @@ The matplotlib ```Figure``` object is replaced by a ```FigureSurface``` object
 which inherits from both ```matplotlib.figure.Figure``` and
 ```pygame.Surface```.
 
+Note that the library is in an experimental developement stage and not
+all features of standard matplotlib backends are implement at the moment.
+
 ## Installation
 ```
 pip install pygame-matplotlib
