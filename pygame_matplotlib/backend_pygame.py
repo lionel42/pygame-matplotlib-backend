@@ -14,6 +14,7 @@ import matplotlib
 from matplotlib.artist import Artist
 from matplotlib.pyplot import figure
 from matplotlib.axes import Axes
+from matplotlib.transforms import IdentityTransform
 import numpy as np
 from matplotlib.transforms import Affine2D
 import pygame
@@ -33,6 +34,18 @@ from matplotlib.backend_bases import (
 from matplotlib.figure import Figure
 from matplotlib.path import Path
 from matplotlib.transforms import Bbox
+
+import logging
+
+logger = logging.getLogger(__name__)
+console = logging.StreamHandler()
+logger.addHandler(console)
+
+# logger.setLevel(logging.DEBUG)
+
+logger.warning(
+    f"{__name__} is still in developpement. Please see our github page."
+)
 
 
 class FigureSurface(pygame.Surface, Figure):
@@ -69,18 +82,25 @@ class FigureSurface(pygame.Surface, Figure):
 
     def set_alpha(self):
         pass
+
     def set_at(self):
         pass
+
     def set_clip(self):
         pass
+
     def set_colorkey(self):
         pass
+
     def set_masks(self):
         pass
+
     def set_palette(self):
         pass
+
     def set_palette_at(self):
         pass
+
     def set_shifts(self):
         pass
 
@@ -162,8 +182,8 @@ class RendererPygame(RendererBase):
         transfrom_to_pygame_axis.set_matrix(
             [[1, 0, 0], [0, -1, self.surface.get_height()], [0, 0, 1]]
         )
-
-        transform += transfrom_to_pygame_axis
+        if not isinstance(transform, IdentityTransform):
+            transform += transfrom_to_pygame_axis
 
         draw_func = (  # Select whether antialiased will be used in pygame
             pygame.draw.aaline if gc.get_antialiased() else pygame.draw.line
@@ -171,7 +191,9 @@ class RendererPygame(RendererBase):
 
         previous_point = (0, 0)
         poly_points = []
+
         for point, code in path.iter_segments(transform):
+            logger.debug(point, code)
             if code == Path.LINETO:
                 draw_func(
                     self.surface, color, previous_point, point, linewidth
@@ -248,33 +270,30 @@ class RendererPygame(RendererBase):
         # Get the expected size of the font
         width, height = myfont.size(s)
         # Tuple for the position of the font
-        font_surf_position = (
-            x,
-            self.surface.get_height() - y
-        )
+        font_surf_position = (x, self.surface.get_height() - y)
         if mtext is not None:
             # Use the alignement from mtext or default
             h_alignment = mtext.get_horizontalalignment()
             v_alignment = mtext.get_verticalalignment()
         else:
-            h_alignment = 'center'
-            v_alignment = 'center'
+            h_alignment = "center"
+            v_alignment = "center"
         # Use the alignement to know where the font should go
-        if h_alignment == 'left':
+        if h_alignment == "left":
             h_offset = 0
-        elif h_alignment == 'center':
-            h_offset = - width / 2
-        elif h_alignment == 'right':
-            h_offset = - width
+        elif h_alignment == "center":
+            h_offset = -width / 2
+        elif h_alignment == "right":
+            h_offset = -width
         else:
             h_offset = 0
 
-        if v_alignment == 'top':
+        if v_alignment == "top":
             v_offset = 0
-        elif v_alignment == 'center' or v_alignment == 'center_baseline':
-            v_offset = - height / 2
-        elif v_alignment == 'bottom' or v_alignment == 'baseline':
-            v_offset = - height
+        elif v_alignment == "center" or v_alignment == "center_baseline":
+            v_offset = -height / 2
+        elif v_alignment == "bottom" or v_alignment == "baseline":
+            v_offset = -height
         else:
             v_offset = 0
         # pygame.draw.circle(self.surface, (255, 0, 0), (x, self.surface.get_height() - y), 3)
@@ -282,7 +301,7 @@ class RendererPygame(RendererBase):
         # Tuple for the position of the font
         font_surf_position = (
             x + h_offset,
-            self.surface.get_height() - y + v_offset
+            self.surface.get_height() - y + v_offset,
         )
         self.surface.blit(font_surface, font_surf_position)
 
@@ -316,8 +335,6 @@ class RendererPygame(RendererBase):
         copy = self.surface.copy()
         copy.bbox = bbox
         return copy
-
-
 
 
 class GraphicsContextPygame(GraphicsContextBase):
@@ -405,6 +422,7 @@ class FigureCanvasPygame(FigureCanvasBase):
     figure : `matplotlib.figure.Figure`
         A high-level Figure instance
     """
+
     blitting: bool = False
 
     # File types allowed for saving
@@ -433,9 +451,10 @@ class FigureCanvasPygame(FigureCanvasBase):
 
     def restore_region(self, region, bbox=None, xy=None):
         rect = (
-            pygame.Rect(*(
-                0, 0 if xy is None else xy
-            ), *self.get_renderer().surface.get_size())
+            pygame.Rect(
+                *(0, 0 if xy is None else xy),
+                *self.get_renderer().surface.get_size(),
+            )
             if bbox is None
             else self.rect_from_bbox(bbox)
         )
@@ -461,13 +480,10 @@ class FigureCanvasPygame(FigureCanvasBase):
             # Full redraw of the figure
             self.figure.draw(self.renderer)
 
-
     def blit(self, bbox=None):
         self.renderer = self.get_renderer(cleared=False)
         self.renderer.surface = self.figure
         self.blitting = True
-
-
 
     def get_renderer(self, cleared=False) -> RendererPygame:
         fig = self.figure
@@ -507,7 +523,7 @@ class FigureCanvasPygame(FigureCanvasBase):
         time_elapsed = 0
         while time_elapsed < interval:
             events = pygame.event.get()
-            time_elapsed += FramePerSec.tick(FPS) / 1000. # Convert ms
+            time_elapsed += FramePerSec.tick(FPS) / 1000.0  # Convert ms
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -519,20 +535,25 @@ class FigureManagerPygame(FigureManagerBase):
 
     For non-interactive backends, the base class is sufficient.
     """
+
     canvas: FigureCanvasPygame
+
     def get_main_display(self):
-        if hasattr(self.canvas, 'main_display'):
-            if (self.canvas.figure.get_size() == self.canvas.main_display.get_size()):
+        if hasattr(self.canvas, "main_display"):
+            if (
+                self.canvas.figure.get_size()
+                == self.canvas.main_display.get_size()
+            ):
                 # If the main display exist and its size has not changed
                 return self.canvas.main_display
         main_display = pygame.display.set_mode(
             self.canvas.figure.get_size(),  # Size matches figure size
         )
-        main_display.fill('white')
+        main_display.fill("white")
         self.canvas.main_display = main_display
         return main_display
 
-    def show(self, block):
+    def show(self, block=True):
         # do something to display the GUI
         pygame.init()
         main_display = self.get_main_display()
