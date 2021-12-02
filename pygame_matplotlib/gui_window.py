@@ -40,5 +40,8 @@ class UIPlotWindow(pygame_gui.elements.ui_window.UIWindow):
         print("setting dimensions")
         # Update the size of the figure with the new bounding rectangle
         self.figuresurf.set_bounding_rect(self.get_container().get_rect())
+        self.update_window_image()
+
+    def update_window_image(self):
         # Update the image of the container
         self.get_container().set_image(self.figuresurf)
