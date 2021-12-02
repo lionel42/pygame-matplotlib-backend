@@ -8,7 +8,7 @@ with ::
     matplotlib.use("'module://pygame_matplotlib.backend_pygame'")
 """
 from __future__ import annotations
-from logging import setLoggerClass
+
 from typing import List
 import matplotlib
 from matplotlib.artist import Artist
@@ -18,10 +18,6 @@ from matplotlib.transforms import IdentityTransform
 import numpy as np
 from matplotlib.transforms import Affine2D
 import pygame
-from pygame import surface
-from pygame import time
-from pygame.draw import arc
-from pygame.event import wait
 import pygame.image
 from pygame import gfxdraw
 from matplotlib._pylab_helpers import Gcf
@@ -41,7 +37,7 @@ logger = logging.getLogger(__name__)
 console = logging.StreamHandler()
 logger.addHandler(console)
 
-# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 logger.warning(
     f"{__name__} is still in developpement. Please see our github page."
