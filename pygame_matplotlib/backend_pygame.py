@@ -181,8 +181,12 @@ class RendererPygame(RendererBase):
         if not isinstance(transform, IdentityTransform):
             transform += transfrom_to_pygame_axis
 
-        draw_func = (  # Select whether antialiased will be used in pygame
-            pygame.draw.aaline if gc.get_antialiased() else pygame.draw.line
+        draw_func = (
+            # Select whether antialiased will be used in pygame
+            # Antialiased cannot hanlde linewidth > 1
+            pygame.draw.aaline
+            if gc.get_antialiased() and linewidth <= 1
+            else pygame.draw.line
         )
 
         previous_point = (0, 0)

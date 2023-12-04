@@ -18,7 +18,7 @@ fig, axes = plt.subplots(3,2,figsize=(16, 12))
 print(type(fig))
 
 axes[0, 0].plot([1,2], [1,2], color='green', label='test')
-axes[0, 0].plot([1,2], [1,1], color='orange', label='test other')
+axes[0, 0].plot([1,2], [1,1], color='orange', lw=5, label='test other larger')
 # axes[0, 0].legend()
 axes[0, 1].text(0.5, 0.5, '2', size=50)
 axes[1, 0].set_xlabel('swag')
