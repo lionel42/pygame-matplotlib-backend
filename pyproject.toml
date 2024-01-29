@@ -1,6 +1,38 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pygame-matplotlib"
+version = "VERSION_PLACEHOLDER"
+dependencies = [
+    "matplotlib",
+    "pygame >= 2.0.0",
+    "pygame_gui",
 ]
-build-backend = "setuptools.build_meta"
+requires-python = ">= 3.9"
+authors = [
+  {name = "Lionel42"},
+]
+description = "A matplotlib backend using pygame."
+readme = "README.md"
+classifiers =[
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+keywords = [
+    "matplotlib",
+    "pygame",
+    "backend",
+    "plot",
+]
+
+
+
+[project.urls]
+Homepage = "https://github.com/lionel42/pygame-matplotlib-backend"
+Repository = "https://github.com/lionel42/pygame-matplotlib-backend"
+
+
