@@ -186,7 +186,7 @@ class RendererPygame(RendererBase):
             # Antialiased cannot hanlde linewidth > 1
             pygame.draw.aaline
             if gc.get_antialiased() and linewidth <= 1
-            else pygame.draw.line
+            else lambda *args: pygame.draw.line(*args, width=linewidth)
         )
 
         previous_point = (0, 0)
@@ -196,7 +196,7 @@ class RendererPygame(RendererBase):
             logger.debug(point, code)
             if code == Path.LINETO:
                 draw_func(
-                    self.surface, color, previous_point, point, linewidth
+                    self.surface, color, previous_point, point
                 )
                 previous_point = point
                 poly_points.append(point)
