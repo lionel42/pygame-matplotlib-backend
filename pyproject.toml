@@ -7,7 +7,6 @@ name = "pygame-matplotlib"
 version = "VERSION_PLACEHOLDER"
 dependencies = [
     "matplotlib",
-    "pygame >= 2.0.0",
     "pygame_gui",
 ]
 requires-python = ">= 3.9"
