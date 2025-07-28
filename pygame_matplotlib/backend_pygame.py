@@ -5,7 +5,7 @@ You can select it as a backend using
 with ::
 
     import matplotlib
-    matplotlib.use("'module://pygame_matplotlib.backend_pygame'")
+    matplotlib.use("pygame")
 """
 from __future__ import annotations
 

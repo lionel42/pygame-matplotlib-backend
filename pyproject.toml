@@ -29,6 +29,9 @@ keywords = [
     "plot",
 ]
 
+# Self register the backend in matplotlib
+[project.entry-points."matplotlib.backend"]
+pygame = "pygame_matplotlib.backend_pygame"
 
 
 [project.urls]

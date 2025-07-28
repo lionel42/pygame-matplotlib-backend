@@ -1,7 +1,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 
-matplotlib.use('module://pygame_matplotlib.backend_pygame')
+matplotlib.use('pygame')
 import numpy as np
 
 x = np.linspace(0, 2 * np.pi, 100)

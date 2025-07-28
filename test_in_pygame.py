@@ -1,7 +1,7 @@
 
 
 import matplotlib
-matplotlib.use('module://pygame_matplotlib.backend_pygame')
+matplotlib.use('pygame')
 #matplotlib.use('Qt4Agg')
 
 import matplotlib.pyplot as plt

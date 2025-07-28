@@ -1,11 +1,7 @@
 # Pygame Matplotlib Backend
 
-This is an attempt to create a dedicated backend for matplotlib
-in pygame.
+Create plots in pygame.
 
-The matplotlib ```Figure``` object is replaced by a ```FigureSurface``` object
-which inherits from both ```matplotlib.figure.Figure``` and
-```pygame.Surface```.
 
 Note that the library is in an experimental developement stage and not
 all features of standard matplotlib backends are implement at the moment.
@@ -21,7 +17,7 @@ First you will need to specify that you want to use pygame backend.
 ```python
 # Select pygame backend
 import matplotlib
-matplotlib.use('module://pygame_matplotlib.backend_pygame')
+matplotlib.use('pygame')
 ```
 
 Then you can use matplotlib as you usually do.
@@ -63,6 +59,14 @@ need to call ```fig.canvas.draw()``` and ```screen.blit(fig)``` during
 the game loop.
 
 See examples in test.py or test_show.py
+
+
+## How it works in the back
+
+The matplotlib ```Figure``` object is replaced by a ```FigureSurface``` object
+which inherits from both ```matplotlib.figure.Figure``` and
+```pygame.Surface```.
+
 
 ## Current implementation
 

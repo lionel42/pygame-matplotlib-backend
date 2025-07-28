@@ -9,7 +9,7 @@ from pygame_gui.core.ui_element import ObjectID
 from .backend_pygame import FigureSurface
 import matplotlib
 
-matplotlib.use("module://pygame_matplotlib.backend_pygame")
+matplotlib.use("pygame")
 
 
 class UIPlotWindow(pygame_gui.elements.ui_window.UIWindow):
