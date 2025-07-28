@@ -5,6 +5,7 @@ import pygame
 import pygame_gui
 from pygame_gui.core.interfaces.manager_interface import IUIManagerInterface
 from pygame_gui.core.ui_element import ObjectID
+from pygame_gui.elements.ui_window import UIWindow
 
 from .backend_pygame import FigureSurface
 import matplotlib
@@ -12,7 +13,7 @@ import matplotlib
 matplotlib.use("pygame")
 
 
-class UIPlotWindow(pygame_gui.elements.ui_window.UIWindow):
+class UIPlotWindow(UIWindow):
     def __init__(
         self,
         rect: pygame.Rect,
@@ -44,4 +45,5 @@ class UIPlotWindow(pygame_gui.elements.ui_window.UIWindow):
 
     def update_window_image(self):
         # Update the image of the container
-        self.get_container().set_image(self.figuresurf)
+        container = self.get_container()
+        container._set_image(self.figuresurf)
