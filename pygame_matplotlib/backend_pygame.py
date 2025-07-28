@@ -10,6 +10,7 @@ with ::
 
 from __future__ import annotations
 
+import logging
 from typing import List
 from matplotlib.artist import Artist
 from matplotlib.transforms import IdentityTransform
@@ -29,15 +30,8 @@ from matplotlib.figure import Figure
 from matplotlib.path import Path
 from matplotlib.transforms import Bbox
 
-import logging
 
 logger = logging.getLogger(__name__)
-console = logging.StreamHandler()
-logger.addHandler(console)
-
-logger.setLevel(logging.WARNING)
-
-logger.warning(f"{__name__} is still in developpement. Please see our github page.")
 
 
 class FigureSurface(pygame.Surface, Figure):
