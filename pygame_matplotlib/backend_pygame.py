@@ -181,7 +181,7 @@ class RendererPygame(RendererBase):
         poly_points = []
 
         for point, code in path.iter_segments(transform):
-            logger.debug(point, code)
+            logger.debug(f"{point=}, {code=}")
             if code == Path.LINETO:
                 draw_func(self.surface, color, previous_point, point)
                 previous_point = point
@@ -239,6 +239,11 @@ class RendererPygame(RendererBase):
         )
 
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
+
+        logger.info(
+            f"Drawing text: {s=} at ({x=}, {y=}) with {angle=} and ismath={ismath} "
+            f"{mtext=} {prop=} {gc=}"
+        )
         # make sure font module is initialized
         if not pygame.font.get_init():
             pygame.font.init()
@@ -249,6 +254,9 @@ class RendererPygame(RendererBase):
         font_surface = myfont.render(
             s, gc.get_antialiased(), [val * 255 for val in gc.get_rgb()]
         )
+        if angle:
+            font_surface = pygame.transform.rotate(font_surface, angle)
+        
         # Get the expected size of the font
         width, height = myfont.size(s)
         # Tuple for the position of the font
@@ -311,6 +319,8 @@ class RendererPygame(RendererBase):
         # return points/72.0 * self.dpi.get()
 
     def clear(self):
+        if not hasattr(self, "surface"):
+            return
         self.surface.fill("white")
 
     def copy_from_bbox(self, bbox):
