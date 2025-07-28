@@ -18,6 +18,7 @@ import numpy as np
 from matplotlib.transforms import Affine2D
 import pygame
 import pygame.image
+import pygame.freetype
 from pygame import gfxdraw
 from matplotlib._pylab_helpers import Gcf
 from matplotlib.backend_bases import (
@@ -239,55 +240,142 @@ class RendererPygame(RendererBase):
         )
 
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
-
-        logger.info(
+        logger.debug(
             f"Drawing text: {s=} at ({x=}, {y=}) with {angle=} and ismath={ismath} "
             f"{mtext=} {prop=} {gc=}"
         )
+
         # make sure font module is initialized
-        if not pygame.font.get_init():
-            pygame.font.init()
+        if not pygame.freetype.get_init():
+            pygame.freetype.init()
+
         # prop is the font properties
-        font_size = prop.get_size_in_points() * 2
-        myfont = pygame.font.Font(prop.get_file(), int(font_size))
-        # apply it to text on a label
-        font_surface = myfont.render(
-            s, gc.get_antialiased(), [val * 255 for val in gc.get_rgb()]
+        # Size must be adjusted
+        font_size = prop.get_size() * 1.42
+        font_file = prop.get_file()
+        logger.debug(f"Font file: {font_file}, size: {font_size}")
+
+        # Set bold
+        # 'light', 'normal', 'regular', 'book',
+        #' medium', 'roman', 'semibold', 'demibold', 'demi', 'bold',
+        # 'heavy', 'extra bold', 'black'
+        font_weight = prop.get_weight()
+        if isinstance(font_weight, int):
+            # If the weight is an int, we assume it is a font weight
+            # in the range 0-1000
+            bold = font_weight >= 600
+        else:
+            bold = font_weight in ["bold", "heavy", "black", "extra bold"]
+        logger.debug(f"Font weight: {font_weight}, bold: {bold}")
+
+        # Set italic
+        # style can be 'normal', 'italic' or 'oblique'
+        font_style = prop.get_style()
+        italic = font_style in ["italic", "oblique"]
+
+        if font_file is None:
+            # Use default matplotlib font
+            font_file = "DejaVuSans"
+
+        pgfont = pygame.freetype.SysFont(
+            font_file, int(font_size), bold=bold, italic=italic
         )
-        if angle:
-            font_surface = pygame.transform.rotate(font_surface, angle)
-        
+
+        logger.debug(f"Font: {pgfont}")
+
+        # apply it to text on a label
+        fg_color = [val * 255 for val in gc.get_rgb()]
+
+        # Use freetype to render the text
+        font_surface, rotated_rect = pgfont.render(
+            s,
+            fg_color,
+            size=font_size,
+            rotation=int(angle),
+        )
+        no_rotation_rect = pgfont.get_rect(s, size=font_size)
+
         # Get the expected size of the font
-        width, height = myfont.size(s)
+        # width, height = (pgfont.get_rect(s).size if USE_FREETYPE else pgfont.size(s))
+        width, height = rotated_rect.size
+
         # Tuple for the position of the font
         font_surf_position = (x, self.surface.get_height() - y)
         if mtext is not None:
             # Use the alignement from mtext or default
             h_alignment = mtext.get_horizontalalignment()
             v_alignment = mtext.get_verticalalignment()
+            rotation_mode = mtext.get_rotation_mode()
         else:
             h_alignment = "center"
             v_alignment = "center"
-        # Use the alignement to know where the font should go
-        if h_alignment == "left":
-            h_offset = 0
-        elif h_alignment == "center":
-            h_offset = -width / 2
-        elif h_alignment == "right":
-            h_offset = -width
-        else:
-            h_offset = 0
 
-        if v_alignment == "top":
-            v_offset = 0
-        elif v_alignment == "center" or v_alignment == "center_baseline":
-            v_offset = -height / 2
-        elif v_alignment == "bottom" or v_alignment == "baseline":
-            v_offset = -height
+        logger.debug(
+            f"{h_alignment=}, {v_alignment=}, {rotation_mode=}, {width=}, {height=}"
+        )
+        # Use the alignement to know where the font should go
+        if rotation_mode == "anchor":
+            # Anchor the text to the position
+            sin_a = np.sin(np.radians(angle))
+            cos_a = np.cos(np.radians(angle))
+
+            sub_width, sub_height = no_rotation_rect.size
+
+            if h_alignment == "left":
+                if v_alignment == "top":
+                    h_offset = 0
+                    v_offset = sub_width * sin_a
+                elif v_alignment == "center":
+                    h_offset = sub_height * sin_a / 2
+                    v_offset = height - sub_height * cos_a / 2
+                else:  #  "bottom" or "baseline"
+                    h_offset = sub_height * sin_a
+                    v_offset = height
+            elif h_alignment == "center":
+                if v_alignment == "top":
+                    h_offset = sub_width / 2 * cos_a
+                    v_offset = sub_width / 2 * sin_a
+                elif v_alignment == "center":
+                    h_offset = width / 2
+                    v_offset = height / 2
+                else:
+                    h_offset = width - (sub_width / 2 * cos_a)
+                    v_offset = height - sub_width / 2 * sin_a
+            elif h_alignment == "right":
+                if v_alignment == "top":
+                    h_offset = width - sub_height * sin_a
+                    v_offset = 0
+                elif v_alignment == "center":
+                    h_offset = width - (sub_height / 2 * sin_a)
+                    v_offset = sub_height / 2 * cos_a
+                else:
+                    h_offset = width
+                    v_offset = cos_a * sub_height
+            else:
+                raise ValueError(f"Unknown {h_alignment=}")
+            h_offset, v_offset = -h_offset, -v_offset
+
         else:
-            v_offset = 0
-        # pygame.draw.circle(self.surface, (255, 0, 0), (x, self.surface.get_height() - y), 3)
-        # pygame.draw.lines(self.surface, (0, 255, 0), True, ((x, self.surface.get_height() - y), (x + width, self.surface.get_height() - y), (x + width, self.surface.get_height() - y + height)))
+            # The text box is aligned to the position
+
+            if h_alignment == "left":
+                h_offset = 0
+            elif h_alignment == "center":
+                h_offset = -width / 2
+            elif h_alignment == "right":
+                h_offset = -width
+            else:
+                h_offset = 0
+
+            if v_alignment == "top":
+                v_offset = 0
+            elif v_alignment == "center" or v_alignment == "center_baseline":
+                v_offset = -height / 2
+            elif v_alignment == "bottom" or v_alignment == "baseline":
+                v_offset = -height
+            else:
+                v_offset = 0
+
         # Tuple for the position of the font
         font_surf_position = (
             x + h_offset,
