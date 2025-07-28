@@ -1,4 +1,5 @@
 """Script taken from matplotlib examples to test rotation modes in text rendering."""
+
 import matplotlib.pyplot as plt
 
 import matplotlib

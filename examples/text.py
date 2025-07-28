@@ -9,6 +9,7 @@ logger = logging.getLogger("pygame_matplotlib")
 logger.setLevel(logging.DEBUG)
 
 import matplotlib
+
 # matplotlib.use("pygame")
 
 fig = plt.figure()
