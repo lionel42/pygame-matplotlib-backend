@@ -1,12 +1,11 @@
 import matplotlib
 import matplotlib.pyplot as plt
 
-matplotlib.use('pygame')
+matplotlib.use("pygame")
 import numpy as np
 
 
 def test_blitting():
-
     x = np.linspace(0, 2 * np.pi, 100)
 
     fig, ax = plt.subplots()
@@ -47,4 +46,3 @@ def test_blitting():
         fig.canvas.blit(fig.bbox)
         # flush any pending GUI events, re-painting the screen if needed
         fig.canvas.flush_events()
-    

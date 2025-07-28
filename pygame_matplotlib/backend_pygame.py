@@ -7,13 +7,11 @@ with ::
     import matplotlib
     matplotlib.use("pygame")
 """
+
 from __future__ import annotations
 
 from typing import List
-import matplotlib
 from matplotlib.artist import Artist
-from matplotlib.pyplot import figure
-from matplotlib.axes import Axes
 from matplotlib.transforms import IdentityTransform
 import numpy as np
 from matplotlib.transforms import Affine2D
@@ -39,9 +37,7 @@ logger.addHandler(console)
 
 logger.setLevel(logging.WARNING)
 
-logger.warning(
-    f"{__name__} is still in developpement. Please see our github page."
-)
+logger.warning(f"{__name__} is still in developpement. Please see our github page.")
 
 
 class FigureSurface(pygame.Surface, Figure):
@@ -164,9 +160,7 @@ class RendererPygame(RendererBase):
     def draw_path(self, gc, path, transform, rgbFace=None):
         """Draw a path using pygame functions."""
         if rgbFace is not None:
-            color = tuple(
-                [int(val * 255) for i, val in enumerate(rgbFace) if i < 3]
-            )
+            color = tuple([int(val * 255) for i, val in enumerate(rgbFace) if i < 3])
         else:
             color = tuple(
                 [int(val * 255) for i, val in enumerate(gc.get_rgb()) if i < 3]
@@ -195,19 +189,13 @@ class RendererPygame(RendererBase):
         for point, code in path.iter_segments(transform):
             logger.debug(point, code)
             if code == Path.LINETO:
-                draw_func(
-                    self.surface, color, previous_point, point
-                )
+                draw_func(self.surface, color, previous_point, point)
                 previous_point = point
                 poly_points.append(point)
             elif code == Path.CURVE3 or code == Path.CURVE4:
                 end_point = point[2:]
-                points_curve = np.concatenate((previous_point, point)).reshape(
-                    (-1, 2)
-                )
-                gfxdraw.bezier(
-                    self.surface, points_curve, len(points_curve), color
-                )
+                points_curve = np.concatenate((previous_point, point)).reshape((-1, 2))
+                gfxdraw.bezier(self.surface, points_curve, len(points_curve), color)
                 previous_point = end_point
                 poly_points.append(end_point)
             elif code == Path.CLOSEPOLY:
@@ -488,8 +476,7 @@ class FigureCanvasPygame(FigureCanvasBase):
     def get_renderer(self, cleared=False) -> RendererPygame:
         fig = self.figure
         reuse_renderer = (
-            hasattr(self, "renderer")
-            and getattr(self, "_last_fig", None) == fig
+            hasattr(self, "renderer") and getattr(self, "_last_fig", None) == fig
         )
         if not reuse_renderer:
             self.renderer = RendererPygame(self.figure.dpi)
@@ -540,10 +527,7 @@ class FigureManagerPygame(FigureManagerBase):
 
     def get_main_display(self):
         if hasattr(self.canvas, "main_display"):
-            if (
-                self.canvas.figure.get_size()
-                == self.canvas.main_display.get_size()
-            ):
+            if self.canvas.figure.get_size() == self.canvas.main_display.get_size():
                 # If the main display exist and its size has not changed
                 return self.canvas.main_display
         main_display = pygame.display.set_mode(

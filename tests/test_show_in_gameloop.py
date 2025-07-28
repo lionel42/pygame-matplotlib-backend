@@ -1,16 +1,14 @@
-
-
 import matplotlib
-matplotlib.use('pygame')
+
+matplotlib.use("pygame")
 import matplotlib.pyplot as plt
 
 import pygame
 
 
 def test_in_game_loop():
-
-    fig, axes = plt.subplots(1, 1,)
-    axes.plot([1,2], [1,2], color='green', label='test')
+    fig, axes = plt.subplots(1, 1)
+    axes.plot([1, 2], [1, 2], color="green", label="test")
 
     fig.canvas.draw()
 

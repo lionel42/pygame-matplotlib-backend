@@ -1,8 +1,8 @@
 """Contain a window with a plot for pygame_gui."""
+
 from typing import Union
 
 import pygame
-import pygame_gui
 from pygame_gui.core.interfaces.manager_interface import IUIManagerInterface
 from pygame_gui.core.ui_element import ObjectID
 from pygame_gui.elements.ui_window import UIWindow

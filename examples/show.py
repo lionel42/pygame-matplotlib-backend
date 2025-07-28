@@ -1,17 +1,13 @@
-import sys
 import os
-from numpy.ma.core import size
-import pygame
 import numpy as np
 
 import matplotlib
-#matplotlib.use('pygame')
-matplotlib.use('pygame')
 
 import matplotlib.pyplot as plt
-import matplotlib.figure as fg
-
 import matplotlib.image as mpimg
+
+
+matplotlib.use("pygame")
 
 
 def plot_error_bars_ex(ax):
@@ -24,24 +20,29 @@ def plot_error_bars_ex(ax):
     # lower & upper limits of the error
     lolims = np.array([0, 0, 1, 0, 1, 0, 0, 0, 1, 0], dtype=bool)
     uplims = np.array([0, 1, 0, 0, 0, 1, 0, 0, 0, 1], dtype=bool)
-    ls = 'dotted'
+    ls = "dotted"
 
     # standard error bars
     ax.errorbar(x, y, xerr=xerr, yerr=yerr, linestyle=ls)
 
     # including upper limits
-    ax.errorbar(x, y + 0.5, xerr=xerr, yerr=yerr, uplims=uplims,
-                linestyle=ls)
+    ax.errorbar(x, y + 0.5, xerr=xerr, yerr=yerr, uplims=uplims, linestyle=ls)
 
     # including lower limits
-    ax.errorbar(x, y + 1.0, xerr=xerr, yerr=yerr, lolims=lolims,
-                linestyle=ls)
+    ax.errorbar(x, y + 1.0, xerr=xerr, yerr=yerr, lolims=lolims, linestyle=ls)
 
     # including upper and lower limits
-    ax.errorbar(x, y + 1.5, xerr=xerr, yerr=yerr,
-                lolims=lolims, uplims=uplims,
-                marker='o', markersize=8,
-                linestyle=ls)
+    ax.errorbar(
+        x,
+        y + 1.5,
+        xerr=xerr,
+        yerr=yerr,
+        lolims=lolims,
+        uplims=uplims,
+        marker="o",
+        markersize=8,
+        linestyle=ls,
+    )
 
     # Plot a series with lower and upper limits in both x & y
     # constant x-error with varying y-error
@@ -58,15 +59,23 @@ def plot_error_bars_ex(ax):
     uplims[[3]] = True  # only limited at this index
 
     # do the plotting
-    ax.errorbar(x, y + 2.1, xerr=xerr, yerr=yerr,
-                xlolims=xlolims, xuplims=xuplims,
-                uplims=uplims, lolims=lolims,
-                marker='o', markersize=8,
-                linestyle='none')
+    ax.errorbar(
+        x,
+        y + 2.1,
+        xerr=xerr,
+        yerr=yerr,
+        xlolims=xlolims,
+        xuplims=xuplims,
+        uplims=uplims,
+        lolims=lolims,
+        marker="o",
+        markersize=8,
+        linestyle="none",
+    )
 
     # tidy up the figure
     ax.set_xlim((0, 5.5))
-    ax.set_title('Errorbar upper and lower limits')
+    ax.set_title("Errorbar upper and lower limits")
 
 
 def plot_violin(ax):
@@ -78,58 +87,56 @@ def plot_violin(ax):
         lower_adjacent_value = np.clip(lower_adjacent_value, vals[0], q1)
         return lower_adjacent_value, upper_adjacent_value
 
-
     def set_axis_style(ax, labels):
-        ax.xaxis.set_tick_params(direction='out')
-        ax.xaxis.set_ticks_position('bottom')
+        ax.xaxis.set_tick_params(direction="out")
+        ax.xaxis.set_ticks_position("bottom")
         ax.set_xticks(np.arange(1, len(labels) + 1))
         ax.set_xticklabels(labels)
         ax.set_xlim(0.25, len(labels) + 0.75)
-        ax.set_xlabel('Sample name')
-
+        ax.set_xlabel("Sample name")
 
     # create test data
     np.random.seed(19680801)
     data = [sorted(np.random.normal(0, std, 100)) for std in range(1, 5)]
 
+    ax.set_title("Customized violin plot")
+    parts = ax.violinplot(data, showmeans=False, showmedians=False, showextrema=False)
 
-
-    ax.set_title('Customized violin plot')
-    parts = ax.violinplot(
-            data, showmeans=False, showmedians=False,
-            showextrema=False)
-
-    for pc in parts['bodies']:
-        pc.set_facecolor('#D43F3A')
-        pc.set_edgecolor('black')
+    for pc in parts["bodies"]:
+        pc.set_facecolor("#D43F3A")
+        pc.set_edgecolor("black")
         pc.set_alpha(1)
 
     quartile1, medians, quartile3 = np.percentile(data, [25, 50, 75], axis=1)
-    whiskers = np.array([
-        adjacent_values(sorted_array, q1, q3)
-        for sorted_array, q1, q3 in zip(data, quartile1, quartile3)])
+    whiskers = np.array(
+        [
+            adjacent_values(sorted_array, q1, q3)
+            for sorted_array, q1, q3 in zip(data, quartile1, quartile3)
+        ]
+    )
     whiskers_min, whiskers_max = whiskers[:, 0], whiskers[:, 1]
 
     inds = np.arange(1, len(medians) + 1)
-    ax.scatter(inds, medians, marker='o', color='white', s=30, zorder=3)
-    ax.vlines(inds, quartile1, quartile3, color='k', linestyle='-', lw=5)
-    ax.vlines(inds, whiskers_min, whiskers_max, color='k', linestyle='-', lw=1)
+    ax.scatter(inds, medians, marker="o", color="white", s=30, zorder=3)
+    ax.vlines(inds, quartile1, quartile3, color="k", linestyle="-", lw=5)
+    ax.vlines(inds, whiskers_min, whiskers_max, color="k", linestyle="-", lw=1)
 
     # set style for the axes
-    labels = ['A', 'B', 'C', 'D']
+    labels = ["A", "B", "C", "D"]
     set_axis_style(ax, labels)
 
-fig, axes = plt.subplots(3,2,figsize=(16, 12))
+
+fig, axes = plt.subplots(3, 2, figsize=(16, 12))
 print(type(fig))
 
-axes[0, 0].plot([1,2], [1,2], color='green', label='test')
-axes[0, 0].plot([1,2], [1,1], color='orange', lw=5, label='test other larger')
+axes[0, 0].plot([1, 2], [1, 2], color="green", label="test")
+axes[0, 0].plot([1, 2], [1, 1], color="orange", lw=5, label="test other larger")
 # axes[0, 0].legend()
-axes[0, 1].text(0.5, 0.5, '2', size=50)
-axes[1, 0].set_xlabel('swag')
+axes[0, 1].text(0.5, 0.5, "2", size=50)
+axes[1, 0].set_xlabel("swag")
 axes[1, 0].fill_between([0, 1, 2], [1, 2, 3], [3, 4, 5])
 axes[1, 0].scatter([0, 1, 2], [2, 3, 4], s=50)
-axes[1, 1].imshow(mpimg.imread('images' + os.sep + 'long_dog.jpg'))
+axes[1, 1].imshow(mpimg.imread("images" + os.sep + "long_dog.jpg"))
 plot_error_bars_ex(axes[2, 1])
 
 plot_violin(axes[2, 0])

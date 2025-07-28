@@ -1,16 +1,15 @@
-
-
 import matplotlib
-matplotlib.use('pygame')
-#matplotlib.use('Qt4Agg')
+
+matplotlib.use("pygame")
+# matplotlib.use('Qt4Agg')
 
 import matplotlib.pyplot as plt
 
 import pygame
 import pygame.display
 
-fig, axes = plt.subplots(1, 1,)
-axes.plot([1,2], [1,2], color='green', label='test')
+fig, axes = plt.subplots(1, 1)
+axes.plot([1, 2], [1, 2], color="green", label="test")
 
 fig.canvas.draw()
 

@@ -1,7 +1,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 
-matplotlib.use('pygame')
+matplotlib.use("pygame")
 import numpy as np
 
 x = np.linspace(0, 2 * np.pi, 100)
@@ -45,4 +45,4 @@ for j in range(1000):
     # flush any pending GUI events, re-painting the screen if needed
     fig.canvas.flush_events()
     # you can put a pause in if you want to slow things down
-    plt.pause(.01)
+    plt.pause(0.01)

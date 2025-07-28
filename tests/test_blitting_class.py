@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
-matplotlib.use('pygame')
+
+matplotlib.use("pygame")
+
 
 class BlitManager:
     def __init__(self, canvas, animated_artists=()):

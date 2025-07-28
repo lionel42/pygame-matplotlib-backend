@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
-matplotlib.use('pygame')
+
+matplotlib.use("pygame")
+
 
 class BlitManager:
     def __init__(self, canvas, animated_artists=()):
@@ -74,6 +76,7 @@ class BlitManager:
             cv.blit(fig.bbox)
         # let the GUI event loop process anything it has to do
         cv.flush_events()
+
 
 x = np.linspace(0, 2 * np.pi, 100)
 # make a new figure
