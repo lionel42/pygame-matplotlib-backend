@@ -2,15 +2,15 @@
 
 import matplotlib.pyplot as plt
 import logging
+import matplotlib
 
 # Set up logging
 logging.basicConfig()
 logger = logging.getLogger("pygame_matplotlib")
 logger.setLevel(logging.DEBUG)
 
-import matplotlib
 
-# matplotlib.use("pygame")
+matplotlib.use("pygame")
 
 fig = plt.figure()
 ax = fig.add_subplot()
