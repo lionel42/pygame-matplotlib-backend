@@ -9,6 +9,7 @@ def test_save_jpg():
     plt.plot([1, 2], [1, 2], color="green")
     plt.text(1.5, 1.5, "2", size=50)
 
+
 def test_tight_layout():
     plt.figure()
     plt.plot([1, 2], [1, 2], color="green")
